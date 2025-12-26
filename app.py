@@ -7,14 +7,14 @@ classifier = pipeline(
 )
 
 def predict(text):
-    result = classifier(text)
-    return result[0]["label"]
+    return classifier(text)[0]["label"]
 
 with gr.Blocks() as demo:
     gr.Markdown("# Sentiment Analysis")
-    text = gr.Textbox(label="Enter text")
-    output = gr.Textbox(label="Sentiment")
+    inp = gr.Textbox(label="Enter text")
+    out = gr.Textbox(label="Sentiment")
     btn = gr.Button("Analyze")
-    btn.click(fn=predict, inputs=text, outputs=output)
+    btn.click(predict, inp, out)
 
-demo.launch()
+demo.launch(server_name="0.0.0.0", server_port=7860)
+
