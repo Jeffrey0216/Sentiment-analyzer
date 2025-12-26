@@ -1,20 +1,23 @@
 import gradio as gr
+import pandas as pd
 from transformers import pipeline
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 
-classifier = pipeline(
-    "sentiment-analysis",
-    model="distilbert-base-uncased-finetuned-sst-2-english"
-)
+df = pd.read_csv("WhatsApp.csv")
 
-def predict(text):
-    return classifier(text)[0]["label"]
+tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased-finetuned-sst-2-english')
+model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased-finetuned-sst-2-english')
 
-with gr.Blocks() as demo:
-    gr.Markdown("# Sentiment Analysis")
-    inp = gr.Textbox(label="Enter text")
-    out = gr.Textbox(label="Sentiment")
-    btn = gr.Button("Analyze")
-    btn.click(predict, inp, out)
+nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
-demo.launch(server_name="0.0.0.0", server_port=7860)
+def sentiment_analysis_model(review):  
+  res = nlp(review)
+  label = res[0]['label']
+  score = res[0]['score']
+  output = f"{label}, Score: {score}"
+  return output
+
+demo = gr.Interface(fn=sentiment_analysis_model, inputs="text", outputs="text", title="SENTIMENT ANALYSIS using DistilBert model", 
+                    description="Sentiment Analysis using Pretrained DistilBert model. The DistilBert model is trained on a sample data of google playstore reviews for WhatsApp application. Provide a review and the model will classify it to be POSITIVE or NEGATIVE")
+demo.launch()
 
